@@ -131,8 +131,11 @@ Do not treat "instance started" as connectivity.
 ## Residual risks
 
 - FFI data-plane ABI v3 is IPv4-only.
-- `DataPlaneSocketAddr` passing was verified on linux/amd64. Android
-  arm64 (AAPCS64) is packaged but not executed in this environment.
+- `DataPlaneSocketAddr` by-value submits (`tcp_connect_submit`,
+  `udp_send_submit`) use the SysV stack path on amd64 and an AAPCS64
+  hidden pointer (`*SocketAddr`) on arm64 and other arches. The
+  linux/amd64 stub ABI is executed in this tree; Android arm64 now
+  uses the pointer path and still needs a device/mesh check.
 - `interface-name` / `routing-mark` / `dialer-proxy` do not apply to
   sockets created inside `libeasytier_ffi`.
 - One native session per `ffi-library` + `instance-name`.

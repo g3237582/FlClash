@@ -11,8 +11,8 @@ import (
 )
 
 func TestStubDataPlane(t *testing.T) {
-	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
-		t.Skip("stub ABI is compiled and verified on linux/amd64")
+	if runtime.GOOS != "linux" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64") {
+		t.Skip("stub ABI is compiled and verified on linux/amd64 and linux/arm64")
 	}
 	lib := buildStub(t)
 	native, err := Open(lib)
