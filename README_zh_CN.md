@@ -71,7 +71,9 @@ on Mobile:
    （仅占位符）。YAML 形状见
    [examples/easytier/easytier-tailscale.yaml](examples/easytier/easytier-tailscale.yaml)。
 4. 验证 `10.77.0.0/24` 走 EasyTier、`100.64.0.0/10` 走 Tailscale、局域网
-   RFC1918 走 `DIRECT`。WireGuard Portal 只作回退。
+   RFC1918 走 `DIRECT`。打开 `100.x` CGNAT 地址时 Android 应用不得闪退；
+   节点 Offline 时应在日志中看到 Tailscale 错误而不是进程退出。
+   WireGuard Portal 只作回退。
 
 Clash.Meta 子模块仍使用 FlClash 补丁版 pin。EasyTier FFI 来自
 [g3237582/mihomo `cursor/easytier-outbound-d1fd`](https://github.com/g3237582/mihomo/tree/cursor/easytier-outbound-d1fd)
