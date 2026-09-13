@@ -117,6 +117,8 @@ expect_under 'generated plugin bindings are skipped' \
   "$repo/plugins/rust_api/lib/src/rust/frb_generated.io.dart" "$(dense 20 4)"
 expect_under 'the intl_utils localization class is skipped' "$repo/lib/l10n/l10n.dart" "$(dense 20 4)"
 expect_under 'a vendored upstream file is skipped' "$repo/Clash.Meta/hub.go" "$(dense 20 4)"
+expect_under 'the EasyTier Clash.Meta overlay is skipped' \
+  "$repo/core/easytier_overlay/adapter/outbound/easytier.go" "$(dense 20 4)"
 expect_under 'a markdown file is skipped' "$repo/notes.md" "$(dense 20 4)"
 
 expect_over 'a dense change to a tracked file' "$repo/tracked.dart" "$(dense 8 24)"

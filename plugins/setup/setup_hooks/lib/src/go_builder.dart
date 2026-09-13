@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 
 import 'build.dart';
 import 'build_cache.dart';
+import 'easytier_overlay.dart';
 import 'error.dart';
 import 'fingerprint.dart';
 import 'options.dart';
@@ -50,6 +51,7 @@ class GoBuilder {
   }
 
   Future<BuildExecution> build(Target target) async {
+    applyEasyTierOverlay(rootDir: rootDir, coreDir: config.coreDir);
     final outDir = target.isLib
         ? p.join(_outputPath, target.platformDir, target.abi!)
         : p.join(_outputPath, target.platformDir);
@@ -181,6 +183,7 @@ class GoBuilder {
       if (File(goWorkSum).existsSync()) inputs.add(goWorkSum);
     }
     inputs.addAll(harnessInputs);
+    inputs.addAll(easyTierOverlayInputs(rootDir));
 
     if (target.isLib) {
       final compilerVersion = runCommand(env['CC']!, ['--version']);
