@@ -239,7 +239,8 @@ func (t *Tailscale) watchBackendState() {
 		if n.State != nil {
 			log.Debugln("[Tailscale](%s) backend state: %v", t.Name(), *n.State)
 		}
-		ready, running := tailscaleNotifyReady(n.State, t.server.TailscaleIPs())
+		v4, v6 := t.server.TailscaleIPs()
+		ready, running := tailscaleNotifyReady(n.State, v4, v6)
 		if ready {
 			t.setBackendInitialized(nil)
 		}
