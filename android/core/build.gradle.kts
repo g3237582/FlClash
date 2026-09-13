@@ -38,6 +38,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    sourceSets {
+        getByName("main") {
+            // Bundled EasyTier FFI. libclash.so still comes from the setup hook
+            // into src/main/jniLibs; this extra srcDir is arm64-v8a only.
+            jniLibs.srcDir(file("${rootProject.projectDir}/easytier/jniLibs"))
+        }
+    }
+
 }
 
 kotlin {

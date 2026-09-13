@@ -1,0 +1,39 @@
+# PLACEHOLDERS ONLY. Replace every CHANGE_ME_*. See android/easytier/README.md.
+mixed-port: 7890
+mode: rule
+log-level: info
+
+proxies:
+  - name: easytier
+    type: easytier
+    ffi-library: ./libeasytier_ffi.so
+    instance-name: CHANGE_ME_INSTANCE
+    config: |
+      instance_name = "CHANGE_ME_INSTANCE"
+      ipv4 = "10.77.0.10"
+
+      [network_identity]
+      network_name = "CHANGE_ME_NETWORK"
+      network_secret = "CHANGE_ME_SECRET"
+
+      [[peer]]
+      uri = "tcp://CHANGE_ME_PEER_HOST:11010"
+
+      [flags]
+      no_tun = true
+    udp: true
+
+  - name: tailscale
+    type: tailscale
+    hostname: CHANGE_ME_TAILSCALE_HOSTNAME
+    auth-key: CHANGE_ME_TAILSCALE_AUTHKEY
+    udp: true
+
+rules:
+  - IP-CIDR,10.77.0.0/24,easytier,no-resolve
+  - IP-CIDR,100.64.0.0/10,tailscale,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - MATCH,DIRECT
