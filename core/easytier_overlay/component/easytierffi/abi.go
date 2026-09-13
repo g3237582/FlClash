@@ -1,10 +1,10 @@
 // Package easytierffi binds libeasytier_ffi through purego (no cgo).
 //
 // The data-plane ABI is the current session + submit/wait/take surface
-// (EasyTier ffi-dataplane). A 20-byte DataPlaneSocketAddr is passed by value
-// in C; on SysV/Apple AMD64 and AAPCS64 that means the caller passes a
-// pointer. This package relies on that MEMORY-class passing. linux/amd64 is
-// the verified target.
+// (EasyTier ffi-dataplane). C passes the 20-byte DataPlaneSocketAddr by
+// value. SysV AMD64 copies those bytes onto the stack (native_amd64.go);
+// AAPCS64 replaces the argument with a pointer to a caller copy
+// (native_other.go). linux/amd64 and Android arm64 both use that split.
 package easytierffi
 
 import (
