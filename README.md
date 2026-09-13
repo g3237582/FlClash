@@ -67,7 +67,9 @@ the existing Tailscale outbound. Full steps: [android/easytier/README.md](androi
    (placeholders only). YAML shape:
    [examples/easytier/easytier-tailscale.yaml](examples/easytier/easytier-tailscale.yaml).
 4. Verify `10.77.0.0/24` via EasyTier, `100.64.0.0/10` via Tailscale, and
-   RFC1918 LAN as `DIRECT`. WireGuard Portal is fallback only.
+   RFC1918 LAN as `DIRECT`. Opening a CGNAT `100.x` URL must not flash-exit
+   the Android app; if the tailnet node is Offline, Core should log a
+   Tailscale error instead. WireGuard Portal is fallback only.
 
 The Clash.Meta submodule stays on the FlClash-patched pin. EasyTier FFI
 from [g3237582/mihomo `cursor/easytier-outbound-d1fd`](https://github.com/g3237582/mihomo/tree/cursor/easytier-outbound-d1fd)

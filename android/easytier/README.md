@@ -123,8 +123,11 @@ Do not treat "instance started" as connectivity.
    `10.77.0.0/24` (example: `http://10.77.0.2:8080/` through the mixed
    port). Success is a completed TCP response.
 
-6. Tailscale: reach a `100.64.0.0/10` address the same way. The
-   `type: tailscale` outbound is unchanged.
+6. Tailscale: reach a `100.64.0.0/10` address the same way. Opening
+   `http://100.x.x.x` must not flash-exit the app. If the node is Offline
+   or TailscaleIPs are empty, Core should log
+   `tailscale: no valid IPv4 address (backend not ready)` (or a recovered
+   `tailscale panic: ...`) instead of aborting the process.
 
 7. LAN: `10/8`, `172.16/12`, `192.168/16` must stay `DIRECT`.
 
