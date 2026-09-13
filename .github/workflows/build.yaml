@@ -117,8 +117,8 @@ jobs:
           }
           bash ../tool/apply_easytier_overlay.sh
           go test -count=1 .
-          go test -count=1 github.com/metacubex/mihomo/component/iface/anet -run TestForceAnet
-          go test -count=1 -tags with_gvisor github.com/metacubex/mihomo/adapter/outbound -run 'TestTailscaleBindSrc|TestRecoverInto'
+          go test -count=1 github.com/metacubex/mihomo/component/iface/anet -run 'TestForceAnet|TestFirstNonEmpty|TestFirstValid|TestChooseIfaces'
+          go test -count=1 -tags with_gvisor github.com/metacubex/mihomo/adapter/outbound -run 'TestTailscale|TestRecoverInto|TestWaitBackendReady|TestWaitTailscaleBindSrc'
           go vet .
           GOOS=linux go vet ./platform
 

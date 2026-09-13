@@ -10,10 +10,7 @@ final _log = Logger('easytier_overlay');
 
 const easyTierOverlayDir = 'core/easytier_overlay';
 
-void applyEasyTierOverlay({
-  required String rootDir,
-  required String coreDir,
-}) {
+void applyEasyTierOverlay({required String rootDir, required String coreDir}) {
   final overlay = Directory(p.join(rootDir, easyTierOverlayDir));
   if (!overlay.existsSync()) {
     return;
