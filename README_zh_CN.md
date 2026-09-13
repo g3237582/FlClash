@@ -53,6 +53,31 @@
     com.follow.clash.action.TOGGLE
    ```
 
+### Android EasyTier（FFI）+ Tailscale
+
+本 fork 可在保留现有 Tailscale 出站的同时，启用原生 EasyTier 出站
+（`type: easytier`）。完整步骤见
+[android/easytier/README.md](android/easytier/README.md)。
+
+1. 安装包含 `libeasytier_ffi.so` 的 arm64 APK（先运行
+   `tool/bundle_easytier_ffi.sh`，再 `dart setup.dart android`）。
+2. `ffi-library` 填 `./libeasytier_ffi.so`。Core 初始化时会把 APK 内的
+   `.so` 复制到应用 files 目录（`home-dir`）。
+3. 覆盖脚本用
+   [examples/easytier/easytier-tailscale-overwrite.js](examples/easytier/easytier-tailscale-overwrite.js)
+   （仅占位符）。YAML 形状见
+   [examples/easytier/easytier-tailscale.yaml](examples/easytier/easytier-tailscale.yaml)。
+4. 验证 `10.77.0.0/24` 走 EasyTier、`100.64.0.0/10` 走 Tailscale、局域网
+   RFC1918 走 `DIRECT`。WireGuard Portal 只作回退。
+
+Clash.Meta 子模块仍使用 FlClash 补丁版 pin。EasyTier FFI 来自
+[g3237582/mihomo `cursor/easytier-outbound-d1fd`](https://github.com/g3237582/mihomo/tree/cursor/easytier-outbound-d1fd)
+（[PR #1](https://github.com/g3237582/mihomo/pull/1)），通过
+`core/easytier_overlay/` 在构建时套上（`tool/apply_easytier_overlay.sh`，
+Core 构建 hook 也会跑）。直接换成该 Alpha 分支会丢掉 FlClash 的
+`AllProxies` 等 API。
+
+
 ## Download
 
 <a href="https://chen08209.github.io/FlClash-fdroid-repo/repo?fingerprint=789D6D32668712EF7672F9E58DEEB15FBD6DCEEC5AE7A4371EA72F2AAE8A12FD"><img alt="Get it on F-Droid" src="snapshots/get-it-on-fdroid.svg" width="200px"/></a> <a href="https://github.com/chen08209/FlClash/releases"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" width="200px"/></a>
@@ -66,9 +91,10 @@ brew install --cask flclash
 
 ## Build
 
-1. 更新 submodules
+1. 更新 submodules 并套上 EasyTier FFI overlay
    ```bash
    git submodule update --init --recursive
+   tool/apply_easytier_overlay.sh
    ```
 
 2. 安装 `Flutter` 以及 `Golang` 环境
@@ -81,11 +107,16 @@ brew install --cask flclash
 
         2. 设置 `ANDROID_NDK` 环境变量
 
-        3. 运行构建脚本
+        3. 将 `libeasytier_ffi.so`（arm64）放到
+           `android/easytier/jniLibs/arm64-v8a/`，再运行构建脚本
 
            ```bash
+           tool/bundle_easytier_ffi.sh
            dart setup.dart android
            ```
+
+           setup hook 也会应用 `core/easytier_overlay/`。详见
+           [android/easytier/README.md](android/easytier/README.md)。
 
     - windows
 

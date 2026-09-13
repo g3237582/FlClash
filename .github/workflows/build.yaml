@@ -115,6 +115,7 @@ jobs:
             gofmt -l ./*.go ./platform ./tun >&2
             exit 1
           }
+          bash ../tool/apply_easytier_overlay.sh
           go test -count=1 .
           go vet .
           GOOS=linux go vet ./platform
