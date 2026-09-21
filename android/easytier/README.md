@@ -123,17 +123,28 @@ Do not treat "instance started" as connectivity.
    `10.77.0.0/24` (example: `http://10.77.0.2:8080/` through the mixed
    port). Success is a completed TCP response.
 
-6. Tailscale: reach a `100.64.0.0/10` address the same way. The
-   `type: tailscale` outbound is unchanged.
+6. Tailscale: the node must reach **Online** in the tailnet admin
+   (LastSeen updating), not stay Offline. Then reach a `100.64.0.0/10`
+   address the same way (`ping`/`curl` `http://100.x.x.x` through the
+   mixed port). Opening that URL must not flash-exit. If TailscaleIPs
+   are still empty after the backend wait, Core should log
+   `tailscale: no valid IPv4 address (backend not ready)` (or a recovered
+   `tailscale panic: ...`) instead of aborting the process.
 
 7. LAN: `10/8`, `172.16/12`, `192.168/16` must stay `DIRECT`.
 
 ## Residual risks
 
 - FFI data-plane ABI v3 is IPv4-only.
-- `DataPlaneSocketAddr` passing was verified on linux/amd64. Android
-  arm64 (AAPCS64) is packaged but not executed in this environment.
+- `DataPlaneSocketAddr` by-value submits (`tcp_connect_submit`,
+  `udp_send_submit`) use the SysV stack path on amd64 and an AAPCS64
+  hidden pointer (`*SocketAddr`) on arm64 and other arches. The
+  linux/amd64 stub ABI is executed in this tree; Android arm64 now
+  uses the pointer path and still needs a device/mesh check.
 - `interface-name` / `routing-mark` / `dialer-proxy` do not apply to
   sockets created inside `libeasytier_ffi`.
 - One native session per `ffi-library` + `instance-name`.
 - Desktop/iOS FFI packaging is out of scope.
+- `FORCE_ANET` prefers netlink `interfaceTable`, then falls back to
+  `net.Interfaces()` when netlink errors or returns an empty list. HarmonyOS
+  still needs a device check that tsnet reaches Running / Online.
