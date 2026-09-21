@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -271,6 +272,7 @@ func (response MethodResponse) send() {
 }
 
 func init() {
+	_ = os.Setenv("FORCE_ANET", "1")
 	registerMethod(updateDnsMethod, withArguments(func(value *string, response MethodResponse) {
 		handleUpdateDns(*value)
 		response.success(true)
