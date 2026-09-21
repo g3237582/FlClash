@@ -1,0 +1,7 @@
+EasyTier FFI overlay for core/Clash.Meta.
+
+Base: chen08209/Clash.Meta @ 70f0570405c3c2c47bb113b88db95006d239b346 (FlClash)
+Source: https://github.com/g3237582/mihomo/tree/cursor/easytier-outbound-d1fd
+PR: https://github.com/g3237582/mihomo/pull/1
+
+Applied by tool/apply_easytier_overlay.sh and by the setup Go hook.
