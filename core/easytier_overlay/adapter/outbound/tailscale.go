@@ -1,7 +1,8 @@
 //go:build with_gvisor && !no_tailscale
 
-// FlClash overlay: refuse invalid TailscaleIPs before bind, recover panics, and
-// keep InterfaceGetter from returning a debug-log Addr error.
+// FlClash overlay: wait for IPN Running (or assigned TailscaleIPs) before
+// dial, refuse an invalid bind address, recover panics, and keep
+// InterfaceGetter from leaking a debug-log Addr error.
 package outbound
 
 import (
@@ -228,7 +229,6 @@ func (t *Tailscale) watchBackendState() {
 	}
 	defer watcher.Close()
 
-	backendInitialized := false
 	exitNodeNeedsStatus := tailscaleExitNodeNeedsStatus(t.option)
 	for {
 		n, err := watcher.Next()
@@ -236,23 +236,23 @@ func (t *Tailscale) watchBackendState() {
 			t.setBackendInitialized(err)
 			return
 		}
-		if n.State == nil {
+		if n.State != nil {
+			log.Debugln("[Tailscale](%s) backend state: %v", t.Name(), *n.State)
+		}
+		v4, v6 := t.server.TailscaleIPs()
+		ready, running := tailscaleNotifyReady(n.State, v4, v6)
+		if ready {
+			t.setBackendInitialized(nil)
+		}
+		if !running {
 			continue
 		}
-
-		if *n.State != ipn.NoState && !backendInitialized {
-			t.setBackendInitialized(nil)
-			backendInitialized = true
-			if !exitNodeNeedsStatus {
-				return
-			}
-		}
-		if exitNodeNeedsStatus && *n.State == ipn.Running {
+		if exitNodeNeedsStatus {
 			if err := t.applyExitNodePrefs(t.ctx); err != nil {
 				log.Warnln("[Tailscale](%s) set exit node failed: %v", t.Name(), err)
 			}
-			return
 		}
+		return
 	}
 }
 
@@ -264,14 +264,11 @@ func (t *Tailscale) setBackendInitialized(err error) {
 }
 
 func (t *Tailscale) waitBackendInitialized(ctx context.Context) error {
-	select {
-	case <-t.backendInitCh:
-		return t.backendInitErr
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-t.ctx.Done():
+	err := waitBackendReady(ctx, t.backendInitCh, t.backendInitErr, t.ctx.Done(), 0)
+	if err == context.Canceled && t.ctx.Err() != nil {
 		return t.ctx.Err()
 	}
+	return err
 }
 
 func (t *Tailscale) applyPrefs(ctx context.Context) error {
@@ -360,7 +357,6 @@ func (t *Tailscale) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.
 	if err != nil {
 		return nil, err
 	}
-	v4, v6 := t.server.TailscaleIPs()
 	options := t.DialOptions()
 	options = append(options, dialer.WithResolver(t.dnsResolver))
 	options = append(options, dialer.WithNetDialer(dialer.NetDialerFunc(func(ctx context.Context, network, address string) (c net.Conn, nerr error) {
@@ -369,7 +365,7 @@ func (t *Tailscale) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.
 		if err != nil {
 			return nil, err
 		}
-		src, err := tailscaleBindSrc(v4, v6, dst.Addr().Is6())
+		src, err := waitTailscaleBindSrc(ctx, dst.Addr().Is6(), t.server.TailscaleIPs, 0, 0)
 		if err != nil {
 			log.Warnln("[Tailscale](%s) %v", t.Name(), err)
 			return nil, err
@@ -399,8 +395,7 @@ func (t *Tailscale) ListenPacketContext(ctx context.Context, metadata *C.Metadat
 	if err = t.ResolveUDP(ctx, metadata); err != nil {
 		return nil, err
 	}
-	v4, v6 := t.server.TailscaleIPs()
-	src, err := tailscaleBindSrc(v4, v6, metadata.DstIP.Is6())
+	src, err := waitTailscaleBindSrc(ctx, metadata.DstIP.Is6(), t.server.TailscaleIPs, 0, 0)
 	if err != nil {
 		log.Warnln("[Tailscale](%s) %v", t.Name(), err)
 		return nil, err

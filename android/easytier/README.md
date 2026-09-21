@@ -123,9 +123,11 @@ Do not treat "instance started" as connectivity.
    `10.77.0.0/24` (example: `http://10.77.0.2:8080/` through the mixed
    port). Success is a completed TCP response.
 
-6. Tailscale: reach a `100.64.0.0/10` address the same way. Opening
-   `http://100.x.x.x` must not flash-exit the app. If the node is Offline
-   or TailscaleIPs are empty, Core should log
+6. Tailscale: the node must reach **Online** in the tailnet admin
+   (LastSeen updating), not stay Offline. Then reach a `100.64.0.0/10`
+   address the same way (`ping`/`curl` `http://100.x.x.x` through the
+   mixed port). Opening that URL must not flash-exit. If TailscaleIPs
+   are still empty after the backend wait, Core should log
    `tailscale: no valid IPv4 address (backend not ready)` (or a recovered
    `tailscale panic: ...`) instead of aborting the process.
 
@@ -143,3 +145,6 @@ Do not treat "instance started" as connectivity.
   sockets created inside `libeasytier_ffi`.
 - One native session per `ffi-library` + `instance-name`.
 - Desktop/iOS FFI packaging is out of scope.
+- `FORCE_ANET` prefers netlink `interfaceTable`, then falls back to
+  `net.Interfaces()` when netlink errors or returns an empty list. HarmonyOS
+  still needs a device check that tsnet reaches Running / Online.
